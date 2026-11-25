@@ -40,7 +40,7 @@ class Character(pygame.sprite.Sprite):
         self.rect = self.img.get_frect(center=initial_center)
 
         # Default movement speed of the character
-        self.speed = 100
+        self.speed = 10
 
 class Player(Character):
     def __init__(self, filename, scale, initial_center):
