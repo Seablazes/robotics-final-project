@@ -89,7 +89,7 @@ class Player(Character):
         self.is_dashing = False
         self.velocity_x = 0
         self.velocity_y = 0
-        self.dash_strength = 5
+        self.dash_strength = 10
         self.deceleration = 1000
         self.facing_up_down = 0     #1 is down, -1 is up
         self.facing_left_right = 0  #1 is right, -1 is left
@@ -98,15 +98,30 @@ class Player(Character):
         self.block_ready = False
 
     def dash(self):
-        print(self.facing_up_down, self.facing_up_down)
+        print(self.facing_left_right, self.facing_up_down)
         if self.dash_ready: # Only dash when cooldown is done
+
+            x_move_temp, y_move_temp = JOYSTICK_X.read(), JOYSTICK_Y.read()
+            if x_move_temp < DEFAULT_X + OFFSET:  # move right
+                self.facing_left_right = RIGHT
+            elif x_move_temp > DEFAULT_X - OFFSET:  # move left
+                self.facing_left_right = LEFT
+            else:
+                self.facing_left_right = 0
+            if y_move_temp < DEFAULT_Y + OFFSET:  # move up
+                self.facing_up_down = UP
+            elif y_move_temp > DEFAULT_Y - OFFSET:  # move down
+                self.facing_up_down = DOWN
+            else:
+                self.facing_up_down = 0
+
             self.dash_ready = False # Start dash cooldown
             self.is_dashing = True  # For update function
             self.velocity_x = self.speed * self.dash_strength
             self.velocity_y = self.speed * self.dash_strength
 
     def update(self):
-        # Dash TODO: add other directions
+        # Dash
         if self.is_dashing:
             # Apply deceleration
             self.velocity_x -= self.deceleration * dt
