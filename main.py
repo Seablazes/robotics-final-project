@@ -36,6 +36,11 @@ class Character(pygame.sprite.Sprite):
             (self.img.width * scale, self.img.height * scale)
         )
 
+        # Game stats
+        self.max_health = 5           # maximum health stat
+        self.health = self.max_health # health remaining
+        self.attack = 1               # damage dealt per attack
+
         # Position rectangle at initial center location
         self.rect = self.img.get_frect(center=initial_center)
 
