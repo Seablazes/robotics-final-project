@@ -29,9 +29,6 @@ IMAGES_DIR = BASE_DIR / 'assets' / 'images'
 ## --- PINNACLE NEXUS --- ##
 JOYSTICK_X = AnalogInput(A4)
 JOYSTICK_Y = AnalogInput(A5)
-DEFAULT_X, DEFAULT_Y = JOYSTICK_X.read(), JOYSTICK_Y.read()
-print(DEFAULT_X, DEFAULT_Y)
-OFFSET = 5 # so it works with joysticks that have diff default x/y values
 
 B_SHIELD = Button(2) # upper left
 LED_SHIELD = DigitalOutput(3)
@@ -39,11 +36,19 @@ LED_SHIELD = DigitalOutput(3)
 B_MELEE = Button(4) # lower left
 LED_MELEE = DigitalOutput(5)
 
-RANGE_BUTTON = Button(7) # upper right
+B_RANGE = Button(7) # upper right
 LED_RANGE = DigitalOutput(6)
 
-DASH_BUTTON = Button(8) # lower right
+B_DASH = Button(8) # lower right
 LED_DASH = DigitalOutput(9)
+
+# for calibration purposes
+DEFAULT_X, DEFAULT_Y = JOYSTICK_X.read(), JOYSTICK_Y.read()
+# shouldn't get messed up by hardware failure/people moving it
+while DEFAULT_X == 0 or DEFAULT_Y == 0 or DEFAULT_X > 900 or DEFAULT_Y > 900:
+    DEFAULT_X, DEFAULT_Y = JOYSTICK_X.read(), JOYSTICK_Y.read()
+
+OFFSET = 5 # so it works with joysticks that have diff default x/y values
 
 # =========================================================================
 # CLASSES
@@ -53,9 +58,9 @@ class Character(pygame.sprite.Sprite):
         super().__init__()
         # Create and scale image
         # TODO: allow for animation
-        self.img = pygame.image.load(IMAGES_DIR / filename).convert_alpha()
-        self.img = pygame.transform.scale(self.img,
-            (self.img.width * scale, self.img.height * scale)
+        self.image = pygame.image.load(IMAGES_DIR / filename).convert_alpha()
+        self.image = pygame.transform.scale(self.image,
+            (self.image.width * scale, self.image.height * scale)
         )
 
         # Game stats
@@ -64,7 +69,7 @@ class Character(pygame.sprite.Sprite):
         self.atk = 1           # damage dealt per attack
 
         # Position rectangle at initial center location
-        self.rect = self.img.get_frect(center=initial_center)
+        self.rect = self.image.get_frect(center=initial_center)
 
         # Default movement speed of the character
         self.speed = 100 #pixels per second
@@ -83,11 +88,8 @@ class Player(Character):
         # Block
         self.block_ready = False
 
-    def move(self):
-        pass
-
     def update(self):
-        window.blit(self.img, self.rect)
+        # Referring to jump code for how this works bear with me
 
 # =========================================================================
 # INITIALIZATION
@@ -112,6 +114,7 @@ Player = Player(
 Characters.add(Player)
 
 Running = True
+
 
 # =========================================================================
 # GAME LOOP
@@ -155,10 +158,13 @@ while Running:
     if y_move > DEFAULT_Y - OFFSET: # move down
         Player.rect.y -= Player.speed * dt
 
+    if B_DASH.read() == 0:
+        Player.rect.x += 100
+
     ## --- DRAWING --- ##
     window.fill((255, 255, 255))
 
-    Characters.update()
+    Characters.draw(window)
     pygame.display.update()
 
 # =========================================================================
