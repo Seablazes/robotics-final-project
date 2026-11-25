@@ -50,7 +50,12 @@ class Character(pygame.sprite.Sprite):
 class Player(Character):
     def __init__(self, filename, scale, initial_center):
         super().__init__(filename, scale, initial_center)
-        self.speed = 50
+
+        # Game stats
+        self.speed = 200
+        self.atk = 1
+
+        # Dash
         self.dash_ready = True
         self.facing_up = False
         self.facing_down = False
