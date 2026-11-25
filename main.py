@@ -8,6 +8,7 @@ Description:
 import sys
 import pygame
 from pathlib import Path
+from pynnacle_nexus import *
 
 # =========================================================================
 # CONSTANTS
@@ -17,6 +18,9 @@ WINDOW_HEIGHT = 720
 
 MAX_FPS = 60
 
+# Directions for ease of use
+UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
+
 ## --- FILE DIRECTORIES --- ##
 BASE_DIR = Path(__file__).resolve().parent
 ASSETS_DIR = BASE_DIR / 'assets'
@@ -25,7 +29,6 @@ IMAGES_DIR = BASE_DIR / 'assets' / 'images'
 # =========================================================================
 # CLASSES
 # =========================================================================
-# players and zombies use the same animation + health + other stuff
 class Character(pygame.sprite.Sprite):
     def __init__(self, filename, scale, initial_center : tuple):
         super().__init__()
@@ -37,9 +40,9 @@ class Character(pygame.sprite.Sprite):
         )
 
         # Game stats
-        self.max_health = 5           # maximum health stat
-        self.health = self.max_health # health remaining
-        self.attack = 1               # damage dealt per attack
+        self.max_hp = 5        # maximum health stat
+        self.hp = self.max_hp  # health remaining
+        self.atk = 1           # damage dealt per attack
 
         # Position rectangle at initial center location
         self.rect = self.img.get_frect(center=initial_center)
@@ -48,19 +51,21 @@ class Character(pygame.sprite.Sprite):
         self.speed = 100 #pixels per second
 
 class Player(Character):
-    def __init__(self, filename, scale, initial_center):
-        super().__init__(filename, scale, initial_center)
-
+    def __init__(self, filename, img_scale, initial_center):
+        super().__init__(filename, img_scale, initial_center)
         # Game stats
         self.speed = 200
-        self.atk = 1
 
         # Dash
         self.dash_ready = True
-        self.facing_up = False
-        self.facing_down = False
-        self.facing_right = True
-        self.facing_left = False
+        self.facing_up_down = 0     #1 is down, -1 is up
+        self.facing_left_right = 0  #1 is right, -1 is left
+
+        # Block
+        self.block_ready = False
+
+    def move(self):
+
 
     def update(self):
         window.blit(self.img, self.rect)
@@ -109,23 +114,16 @@ while Running:
 
     ## --- KEYSTATES --- ##
     keys = pygame.key.get_pressed()
-    # PLAYER MOVEMENT
+    """"# PLAYER MOVEMENT
     if keys[pygame.K_w]:  # Move up
         Player.rect.top -= Player.speed * dt
-        Player.facing_up = True
-        Player.facing_down = False
     if keys[pygame.K_s]:  # Move down
         Player.rect.bottom += Player.speed * dt
-        Player.facing_up = False
-        Player.facing_down = True
     if keys[pygame.K_a]:  # Move left
         Player.rect.left -= Player.speed * dt
-        Player.facing_right = False
-        Player.facing_left = True
     if keys[pygame.K_d]:  # Move right
-        Player.rect.right += Player.speed * dt
-        Player.facing_right = True
-        Player.facing_left = False
+        Player.rect.right += Player.speed * dt"""
+    # forgot we were using joystick lol
 
     ## --- EVENT LOOP --- ##
     for event in pygame.event.get():
@@ -134,17 +132,12 @@ while Running:
         elif event.type == pygame.KEYDOWN:  # Keypresses
             if event.key == pygame.K_1:
                 if Player.dash_ready:
-                    if Player.facing_up:
-                        Player.rect.top -= Player.speed * dt * 100
-                    if Player.facing_down:
-                        Player.rect.bottom += Player.speed * dt * 100
-                    if Player.facing_left:
-                        Player.rect.left -= Player.speed * dt * 100
-                    if Player.facing_right:
-                        Player.rect.right += Player.speed * dt * 100
+                    pass
 
+    ## --- CONSOLE INPUT --- ##
 
     ## --- UPDATING --- ##
+
 
     ## --- DRAWING --- ##
     window.fill((255, 255, 255))
