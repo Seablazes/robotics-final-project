@@ -46,6 +46,16 @@ class Player(Character):
     def __init__(self, filename, scale, initial_center):
         super().__init__(filename, scale, initial_center)
 
+    def move(self):
+        if keys[pygame.K_w]:  # Move up
+            self.rect.top -= self.speed
+        if keys[pygame.K_s]:  # Move down
+            self.rect.bottom += self.speed
+        if keys[pygame.K_a]:  # Move left
+            self.rect.left -= self.speed
+        if keys[pygame.K_d]:  # Move right
+            self.rect.right += self.speed
+
     def update(self):
         window.blit(self.img, self.rect)
 
