@@ -68,6 +68,19 @@ class Player(Character):
 # =========================================================================
 # INITIALIZATION
 # =========================================================================
+## --- PINNACLE NEXUS --- ##
+joystick_x = AnalogInput(A4)
+joystick_y = AnalogInput(A5)
+
+B_SHIELD = Button(2) # upper left
+LED_SHIELD = DigitalOutput(3)
+B_MELEE = Button(4) # lower left
+LED_MELEE = DigitalOutput(5)
+RANGE_BUTTON = Button(7) # upper right
+LED_RANGE = DigitalOutput(6)
+DASH_BUTTON = Button(8) # lower right
+LED_DASH = DigitalOutput(9)
+
 pygame.init()
 
 ## --- DISPLAY SURFACE --- ##
