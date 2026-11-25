@@ -104,7 +104,7 @@ while Running:
     ## --- DRAWING --- ##
     window.fill((255, 255, 255))
 
-    Characters.draw(window)
+    Characters.update()
     pygame.display.update()
 
 # =========================================================================
