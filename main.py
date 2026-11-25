@@ -2,7 +2,7 @@
 Program Name:
 Programmer/s: Caylie del Rosario, Soph Kawada, Abri Wisco, Sam Zantua
 
-Description:
+Description: TODO: fix
 """
 
 import sys
@@ -19,7 +19,10 @@ WINDOW_HEIGHT = 720
 MAX_FPS = 60
 
 # Directions for ease of use
-UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
+UP = -1
+DOWN = 1
+LEFT = -1
+RIGHT = 1
 
 ## --- FILE DIRECTORIES --- ##
 BASE_DIR = Path(__file__).resolve().parent
@@ -45,10 +48,11 @@ LED_DASH = DigitalOutput(9)
 # for calibration purposes
 DEFAULT_X, DEFAULT_Y = JOYSTICK_X.read(), JOYSTICK_Y.read()
 # shouldn't get messed up by hardware failure/people moving it
-while DEFAULT_X == 0 or DEFAULT_Y == 0 or DEFAULT_X > 900 or DEFAULT_Y > 900:
+while DEFAULT_X == 0 or DEFAULT_Y == 0 or DEFAULT_X >= 600 or DEFAULT_Y >= 600:
     DEFAULT_X, DEFAULT_Y = JOYSTICK_X.read(), JOYSTICK_Y.read()
+print(DEFAULT_X, DEFAULT_Y)
 
-OFFSET = 5 # so it works with joysticks that have diff default x/y values
+OFFSET = 10 # so it works with joysticks that have diff default x/y values
 
 # =========================================================================
 # CLASSES
@@ -82,14 +86,47 @@ class Player(Character):
 
         # Dash
         self.dash_ready = True
+        self.is_dashing = False
+        self.velocity_x = 0
+        self.velocity_y = 0
+        self.dash_strength = 5
+        self.deceleration = 1000
         self.facing_up_down = 0     #1 is down, -1 is up
         self.facing_left_right = 0  #1 is right, -1 is left
 
         # Block
         self.block_ready = False
 
+    def dash(self):
+        print(self.facing_up_down, self.facing_up_down)
+        if self.dash_ready: # Only dash when cooldown is done
+            self.dash_ready = False # Start dash cooldown
+            self.is_dashing = True  # For update function
+            self.velocity_x = self.speed * self.dash_strength
+            self.velocity_y = self.speed * self.dash_strength
+
     def update(self):
-        # Referring to jump code for how this works bear with me
+        # Dash TODO: add other directions
+        if self.is_dashing:
+            # Apply deceleration
+            self.velocity_x -= self.deceleration * dt
+            if self.velocity_x <= 0:
+                self.velocity_x = 0
+            self.velocity_y -= self.deceleration * dt
+            if self.velocity_y <= 0:
+                self.velocity_y = 0
+            if self.velocity_x == 0 and self.velocity_y == 0:
+                self.is_dashing = False
+            # Increase positions in the correct direction
+            self.rect.x += self.velocity_x * self.facing_left_right
+            self.rect.y += self.velocity_y * self.facing_up_down
+
+        # no going off the edge
+        if self.rect.top <= 0: self.rect.top = 0
+        if self.rect.bottom >= WINDOW_HEIGHT: self.rect.bottom = WINDOW_HEIGHT
+        if self.rect.left <= 0: self.rect.left = 0
+        if self.rect.right >= WINDOW_WIDTH: self.rect.bottom = WINDOW_WIDTH
+
 
 # =========================================================================
 # INITIALIZATION
@@ -140,8 +177,7 @@ while Running:
         if event.type == pygame.QUIT:       # Quit the game
             Running = False
         elif event.type == pygame.KEYDOWN:  # Keypresses
-            if event.key == pygame.K_1:
-                if Player.dash_ready:
+            if event.key == "":
                     pass
 
     ## --- CONSOLE INPUT --- ##
@@ -149,21 +185,31 @@ while Running:
 
     ## --- UPDATING --- ##
     # Player
-    if x_move < DEFAULT_X + OFFSET: # move right
-        Player.rect.x += Player.speed * dt
-    if x_move > DEFAULT_X - OFFSET: # move left
-        Player.rect.x -= Player.speed * dt
-    if y_move < DEFAULT_Y + OFFSET: # move up
-        Player.rect.y += Player.speed * dt
-    if y_move > DEFAULT_Y - OFFSET: # move down
-        Player.rect.y -= Player.speed * dt
+    if not Player.is_dashing: # dash temporarily disables regular movement
+        if x_move < DEFAULT_X + OFFSET: # move right
+            Player.rect.x += Player.speed * dt
+            Player.facing_left_right = RIGHT
+        if x_move > DEFAULT_X - OFFSET: # move left
+            Player.rect.x -= Player.speed * dt
+            Player.facing_left_right = LEFT
+        if y_move < DEFAULT_Y + OFFSET: # move up
+            Player.rect.y += Player.speed * dt
+            Player.facing_up_down = UP
+        if y_move > DEFAULT_Y - OFFSET: # move down
+            Player.rect.y -= Player.speed * dt
+            Player.facing_up_down = DOWN
 
-    if B_DASH.read() == 0:
-        Player.rect.x += 100
+    if B_DASH.is_toggled():
+        print("dash button pressed")
+        Player.dash()
+    if B_MELEE.is_toggled():
+        print("melee button pressed, for now this resets dash cooldown")
+        Player.dash_ready = True
 
     ## --- DRAWING --- ##
     window.fill((255, 255, 255))
 
+    Characters.update()
     Characters.draw(window)
     pygame.display.update()
 
