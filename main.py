@@ -90,7 +90,7 @@ class Player(Character):
         self.velocity_x = 0
         self.velocity_y = 0
         self.dash_strength = 100
-        self.deceleration = 60
+        self.deceleration = 120
         self.facing_up_down = 0     #1 is down, -1 is up
         self.facing_left_right = 0  #1 is right, -1 is left
 
@@ -132,19 +132,16 @@ class Player(Character):
         if self.is_dashing:
             # Apply deceleration
             self.velocity_x -= self.deceleration * dt
-            if self.velocity_x <= 0:
-                self.velocity_x = 0
+            if self.velocity_x <= 0: self.velocity_x = 0
             self.velocity_y -= self.deceleration * dt
-            if self.velocity_y <= 0:
-                self.velocity_y = 0
+            if self.velocity_y <= 0: self.velocity_y = 0
             if self.velocity_x == 0 and self.velocity_y == 0:
                 self.is_dashing = False
-                print("Dash ended successfully?")
             # Increase positions in the correct direction
             self.rect.x += self.velocity_x * self.facing_left_right
             self.rect.y += self.velocity_y * self.facing_up_down
 
-        # no going off the edge
+        # Edge detection
         if self.rect.top <= 0: self.rect.top = 0
         if self.rect.bottom >= WINDOW_HEIGHT: self.rect.bottom = WINDOW_HEIGHT
         if self.rect.left <= 0: self.rect.left = 0
@@ -223,10 +220,8 @@ while Running:
             Player.facing_up_down = DOWN
 
     if B_DASH.is_toggled():
-        print("dash button pressed")
         Player.dash()
     if B_MELEE.is_toggled():
-        print("melee button pressed, for now this resets dash cooldown")
         Player.dash_ready = True
 
     ## --- DRAWING --- ##
