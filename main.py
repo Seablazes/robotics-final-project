@@ -89,8 +89,8 @@ class Player(Character):
         self.is_dashing = False
         self.velocity_x = 0
         self.velocity_y = 0
-        self.dash_strength = 10
-        self.deceleration = 1000
+        self.dash_strength = 100
+        self.deceleration = 60
         self.facing_up_down = 0     #1 is down, -1 is up
         self.facing_left_right = 0  #1 is right, -1 is left
 
@@ -98,27 +98,34 @@ class Player(Character):
         self.block_ready = False
 
     def dash(self):
-        print(self.facing_left_right, self.facing_up_down)
         if self.dash_ready: # Only dash when cooldown is done
 
             x_move_temp, y_move_temp = JOYSTICK_X.read(), JOYSTICK_Y.read()
-            if x_move_temp < DEFAULT_X + OFFSET:  # move right
+
+            if x_move_temp < DEFAULT_X + OFFSET:
                 self.facing_left_right = RIGHT
-            elif x_move_temp > DEFAULT_X - OFFSET:  # move left
+            else: self.facing_left_right = 0
+            if x_move_temp > DEFAULT_X - OFFSET:
                 self.facing_left_right = LEFT
-            else:
-                self.facing_left_right = 0
-            if y_move_temp < DEFAULT_Y + OFFSET:  # move up
+            else: self.facing_left_right = 0
+
+            if y_move_temp < DEFAULT_Y + OFFSET:
                 self.facing_up_down = UP
-            elif y_move_temp > DEFAULT_Y - OFFSET:  # move down
+            else: self.facing_up_down = 0
+            if y_move_temp > DEFAULT_Y - OFFSET:
                 self.facing_up_down = DOWN
-            else:
-                self.facing_up_down = 0
+            else: self.facing_up_down = 0
+
+            print(self.facing_left_right, self.facing_up_down)
 
             self.dash_ready = False # Start dash cooldown
             self.is_dashing = True  # For update function
-            self.velocity_x = self.speed * self.dash_strength
-            self.velocity_y = self.speed * self.dash_strength
+            if self.facing_left_right != 0:
+                self.velocity_x = self.speed * self.dash_strength
+            else: self.velocity_x = 0
+            if self.facing_up_down != 0:
+                self.velocity_y = self.speed * self.dash_strength
+            else: self.velocity_y = 0
 
     def update(self):
         # Dash
@@ -132,6 +139,7 @@ class Player(Character):
                 self.velocity_y = 0
             if self.velocity_x == 0 and self.velocity_y == 0:
                 self.is_dashing = False
+                print("Dash ended successfully?")
             # Increase positions in the correct direction
             self.rect.x += self.velocity_x * self.facing_left_right
             self.rect.y += self.velocity_y * self.facing_up_down
@@ -140,7 +148,7 @@ class Player(Character):
         if self.rect.top <= 0: self.rect.top = 0
         if self.rect.bottom >= WINDOW_HEIGHT: self.rect.bottom = WINDOW_HEIGHT
         if self.rect.left <= 0: self.rect.left = 0
-        if self.rect.right >= WINDOW_WIDTH: self.rect.bottom = WINDOW_WIDTH
+        if self.rect.right >= WINDOW_WIDTH: self.rect.right = WINDOW_WIDTH
 
 
 # =========================================================================
