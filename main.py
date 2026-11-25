@@ -87,12 +87,11 @@ class Player(Character):
         # Dash
         self.dash_ready = True
         self.is_dashing = False
-        self.velocity_x = 0
-        self.velocity_y = 0
-        self.dash_strength = 500
-        self.deceleration = 120
+        self.dash_speed = 600
         self.facing_up_down = 0     #1 is down, -1 is up
         self.facing_left_right = 0  #1 is right, -1 is left
+        self.dash_frame_counter = 0
+        self.dash_max_frames = 60
 
         # Block
         self.block_ready = False
@@ -103,28 +102,18 @@ class Player(Character):
 
             self.dash_ready = False # Start dash cooldown
             self.is_dashing = True  # For update function
-            if self.facing_left_right != 0:
-                self.velocity_x = self.dash_strength
-            else: self.velocity_x = 0
-            if self.facing_up_down != 0:
-                self.velocity_y = self.dash_strength
-            else: self.velocity_y = 0
-
-            print(self.velocity_x, self.velocity_y)
 
     def update(self):
         # Dash
         if self.is_dashing:
-            # Apply deceleration
-            self.velocity_x -= self.deceleration * dt
-            if self.velocity_x <= 0: self.velocity_x = 0
-            self.velocity_y -= self.deceleration * dt
-            if self.velocity_y <= 0: self.velocity_y = 0
-            if self.velocity_x == 0 and self.velocity_y == 0:
+            # Move in the correct direction
+            self.rect.x += self.dash_speed * self.facing_left_right * dt
+            self.rect.y += self.dash_speed * self.facing_up_down * dt
+            # Update frame count
+            self.dash_frame_counter += 1
+            # If dashing for a whole lotta frames, stop
+            if self.dash_frame_counter >= 60:
                 self.is_dashing = False
-            # Increase positions in the correct direction
-            self.rect.x += self.velocity_x * self.facing_left_right
-            self.rect.y += self.velocity_y * self.facing_up_down
 
         # Edge detection
         if self.rect.top <= 0: self.rect.top = 0
@@ -208,7 +197,6 @@ while Running:
         else: Player.facing_left_right = 0
 
     if B_DASH.is_toggled():
-        print(x_move, y_move)
         Player.dash()
     if B_MELEE.is_toggled():
         Player.dash_ready = True
