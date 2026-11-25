@@ -88,6 +88,18 @@ Running = True
 while Running:
     dt = clock.tick(MAX_FPS) / 1000 # Get time between frames in ms
 
+    ## --- KEYSTATES --- ##
+    keys = pygame.key.get_pressed()
+    # PLAYER MOVEMENT
+    if keys[pygame.K_w]:  # Move up
+        Player.rect.top -= Player.speed
+    if keys[pygame.K_s]:  # Move down
+        Player.rect.bottom += Player.speed
+    if keys[pygame.K_a]:  # Move left
+        Player.rect.left -= Player.speed
+    if keys[pygame.K_d]:  # Move right
+        Player.rect.right += Player.speed
+
     ## --- EVENT LOOP --- ##
     for event in pygame.event.get():
         if event.type == pygame.QUIT:       # Quit the game
