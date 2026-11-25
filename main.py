@@ -26,6 +26,25 @@ BASE_DIR = Path(__file__).resolve().parent
 ASSETS_DIR = BASE_DIR / 'assets'
 IMAGES_DIR = BASE_DIR / 'assets' / 'images'
 
+## --- PINNACLE NEXUS --- ##
+JOYSTICK_X = AnalogInput(A4)
+JOYSTICK_Y = AnalogInput(A5)
+DEFAULT_X, DEFAULT_Y = JOYSTICK_X.read(), JOYSTICK_Y.read()
+print(DEFAULT_X, DEFAULT_Y)
+OFFSET = 5 # so it works with joysticks that have diff default x/y values
+
+B_SHIELD = Button(2) # upper left
+LED_SHIELD = DigitalOutput(3)
+
+B_MELEE = Button(4) # lower left
+LED_MELEE = DigitalOutput(5)
+
+RANGE_BUTTON = Button(7) # upper right
+LED_RANGE = DigitalOutput(6)
+
+DASH_BUTTON = Button(8) # lower right
+LED_DASH = DigitalOutput(9)
+
 # =========================================================================
 # CLASSES
 # =========================================================================
@@ -65,7 +84,7 @@ class Player(Character):
         self.block_ready = False
 
     def move(self):
-
+        pass
 
     def update(self):
         window.blit(self.img, self.rect)
@@ -73,18 +92,6 @@ class Player(Character):
 # =========================================================================
 # INITIALIZATION
 # =========================================================================
-## --- PINNACLE NEXUS --- ##
-joystick_x = AnalogInput(A4)
-joystick_y = AnalogInput(A5)
-
-B_SHIELD = Button(2) # upper left
-LED_SHIELD = DigitalOutput(3)
-B_MELEE = Button(4) # lower left
-LED_MELEE = DigitalOutput(5)
-RANGE_BUTTON = Button(7) # upper right
-LED_RANGE = DigitalOutput(6)
-DASH_BUTTON = Button(8) # lower right
-LED_DASH = DigitalOutput(9)
 
 pygame.init()
 
@@ -135,9 +142,18 @@ while Running:
                     pass
 
     ## --- CONSOLE INPUT --- ##
+    x_move, y_move = JOYSTICK_X.read(), JOYSTICK_Y.read()
 
     ## --- UPDATING --- ##
-
+    # Player
+    if x_move < DEFAULT_X + OFFSET: # move right
+        Player.rect.x += Player.speed * dt
+    if x_move > DEFAULT_X - OFFSET: # move left
+        Player.rect.x -= Player.speed * dt
+    if y_move < DEFAULT_Y + OFFSET: # move up
+        Player.rect.y += Player.speed * dt
+    if y_move > DEFAULT_Y - OFFSET: # move down
+        Player.rect.y -= Player.speed * dt
 
     ## --- DRAWING --- ##
     window.fill((255, 255, 255))
