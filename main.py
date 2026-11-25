@@ -97,8 +97,7 @@ while Running:
 
     ## --- KEYSTATES --- ##
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_SPACE]:  # Activate on hold
-        pass
+    Player.move()
 
     ## --- UPDATING --- ##
 
