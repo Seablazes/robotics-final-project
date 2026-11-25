@@ -89,7 +89,7 @@ class Player(Character):
         self.is_dashing = False
         self.velocity_x = 0
         self.velocity_y = 0
-        self.dash_strength = 100
+        self.dash_strength = 500
         self.deceleration = 120
         self.facing_up_down = 0     #1 is down, -1 is up
         self.facing_left_right = 0  #1 is right, -1 is left
@@ -99,33 +99,18 @@ class Player(Character):
 
     def dash(self):
         if self.dash_ready: # Only dash when cooldown is done
-
-            x_move_temp, y_move_temp = JOYSTICK_X.read(), JOYSTICK_Y.read()
-
-            if x_move_temp < DEFAULT_X + OFFSET:
-                self.facing_left_right = RIGHT
-            else: self.facing_left_right = 0
-            if x_move_temp > DEFAULT_X - OFFSET:
-                self.facing_left_right = LEFT
-            else: self.facing_left_right = 0
-
-            if y_move_temp < DEFAULT_Y + OFFSET:
-                self.facing_up_down = UP
-            else: self.facing_up_down = 0
-            if y_move_temp > DEFAULT_Y - OFFSET:
-                self.facing_up_down = DOWN
-            else: self.facing_up_down = 0
-
             print(self.facing_left_right, self.facing_up_down)
 
             self.dash_ready = False # Start dash cooldown
             self.is_dashing = True  # For update function
             if self.facing_left_right != 0:
-                self.velocity_x = self.speed * self.dash_strength
+                self.velocity_x = self.dash_strength
             else: self.velocity_x = 0
             if self.facing_up_down != 0:
-                self.velocity_y = self.speed * self.dash_strength
+                self.velocity_y = self.dash_strength
             else: self.velocity_y = 0
+
+            print(self.velocity_x, self.velocity_y)
 
     def update(self):
         # Dash
@@ -172,7 +157,6 @@ Characters.add(Player)
 
 Running = True
 
-
 # =========================================================================
 # GAME LOOP
 # =========================================================================
@@ -209,17 +193,22 @@ while Running:
         if x_move < DEFAULT_X + OFFSET: # move right
             Player.rect.x += Player.speed * dt
             Player.facing_left_right = RIGHT
+        else: Player.facing_left_right = 0
         if x_move > DEFAULT_X - OFFSET: # move left
             Player.rect.x -= Player.speed * dt
             Player.facing_left_right = LEFT
+        else: Player.facing_left_right = 0
         if y_move < DEFAULT_Y + OFFSET: # move up
             Player.rect.y += Player.speed * dt
             Player.facing_up_down = UP
+        else: Player.facing_up_down = 0
         if y_move > DEFAULT_Y - OFFSET: # move down
             Player.rect.y -= Player.speed * dt
             Player.facing_up_down = DOWN
+        else: Player.facing_left_right = 0
 
     if B_DASH.is_toggled():
+        print(x_move, y_move)
         Player.dash()
     if B_MELEE.is_toggled():
         Player.dash_ready = True
