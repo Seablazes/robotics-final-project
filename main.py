@@ -40,21 +40,17 @@ class Character(pygame.sprite.Sprite):
         self.rect = self.img.get_frect(center=initial_center)
 
         # Default movement speed of the character
-        self.speed = 10
+        self.speed = 100 #pixels per second
 
 class Player(Character):
     def __init__(self, filename, scale, initial_center):
         super().__init__(filename, scale, initial_center)
-
-    def move(self, keys_pressed):
-        if keys_pressed[pygame.K_w]:  # Move up
-            self.rect.top -= self.speed
-        if keys_pressed[pygame.K_s]:  # Move down
-            self.rect.bottom += self.speed
-        if keys_pressed[pygame.K_a]:  # Move left
-            self.rect.left -= self.speed
-        if keys_pressed[pygame.K_d]:  # Move right
-            self.rect.right += self.speed
+        self.speed = 50
+        self.dash_ready = True
+        self.facing_up = False
+        self.facing_down = False
+        self.facing_right = True
+        self.facing_left = False
 
     def update(self):
         window.blit(self.img, self.rect)
@@ -92,24 +88,38 @@ while Running:
     keys = pygame.key.get_pressed()
     # PLAYER MOVEMENT
     if keys[pygame.K_w]:  # Move up
-        Player.rect.top -= Player.speed
+        Player.rect.top -= Player.speed * dt
+        Player.facing_up = True
+        Player.facing_down = False
     if keys[pygame.K_s]:  # Move down
-        Player.rect.bottom += Player.speed
+        Player.rect.bottom += Player.speed * dt
+        Player.facing_up = False
+        Player.facing_down = True
     if keys[pygame.K_a]:  # Move left
-        Player.rect.left -= Player.speed
+        Player.rect.left -= Player.speed * dt
+        Player.facing_right = False
+        Player.facing_left = True
     if keys[pygame.K_d]:  # Move right
-        Player.rect.right += Player.speed
+        Player.rect.right += Player.speed * dt
+        Player.facing_right = True
+        Player.facing_left = False
 
     ## --- EVENT LOOP --- ##
     for event in pygame.event.get():
         if event.type == pygame.QUIT:       # Quit the game
             Running = False
         elif event.type == pygame.KEYDOWN:  # Keypresses
-            if event.key == pygame.K_ESCAPE: Running = False
+            if event.key == pygame.K_1:
+                if Player.dash_ready:
+                    if Player.facing_up:
+                        Player.rect.top -= Player.speed * dt * 100
+                    if Player.facing_down:
+                        Player.rect.bottom += Player.speed * dt * 100
+                    if Player.facing_left:
+                        Player.rect.left -= Player.speed * dt * 100
+                    if Player.facing_right:
+                        Player.rect.right += Player.speed * dt * 100
 
-    ## --- KEYSTATES --- ##
-    keys = pygame.key.get_pressed()
-    Player.move(keys)
 
     ## --- UPDATING --- ##
 
