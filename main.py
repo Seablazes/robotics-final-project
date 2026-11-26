@@ -109,6 +109,8 @@ class Player(Character):
         self.dash_direction = (0,0)
         self.dash_frame_counter = 0
         self.dash_max_frames = 10
+        self.dash_cd_frame_count = 0
+        self.dash_cd_max_frames = 30
 
         # Block
         self.block_ready = False
@@ -146,6 +148,12 @@ class Player(Character):
                 self.dash_frame_counter = 0
         else:
             self.image = self.placeholder_base
+        # Cooldown once dash has ended
+        if not self.dash_ready and not self.is_dashing:
+            self.dash_cd_frame_count += 1
+            if self.dash_cd_frame_count >= self.dash_cd_max_frames:
+                self.dash_cd_frame_count = 0
+                self.dash_ready = True
 
         # Edge detection
         if self.rect.top <= 0: self.rect.top = 0
@@ -233,8 +241,8 @@ while Running:
 
     if B_DASH.is_toggled():
         Player.dash()
-    if B_MELEE.is_toggled():
-        Player.dash_ready = True
+    """if B_MELEE.is_toggled():
+        Player.dash_ready = True"""
 
     Player.move()
 
