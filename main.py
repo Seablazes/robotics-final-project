@@ -207,6 +207,7 @@ while Running:
     Characters.update()
     Characters.draw(window)
     pygame.display.update()
+    print("Happy birthday Miss Delgado!")
 
 # =========================================================================
 # CLEANUP
