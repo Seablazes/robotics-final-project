@@ -19,10 +19,10 @@ WINDOW_HEIGHT = 720
 MAX_FPS = 60
 
 # Directions for ease of use
-UP = -1
-DOWN = 1
-LEFT = -1
-RIGHT = 1
+UP = -1   # towards 0
+DOWN = 1  # towards WINDOW_HEIGHT
+LEFT = -1 # towards 0
+RIGHT = 1 # towards WINDOW_WIDTH
 
 ## --- FILE DIRECTORIES --- ##
 BASE_DIR = Path(__file__).resolve().parent
@@ -50,10 +50,17 @@ DEFAULT_X, DEFAULT_Y = JOYSTICK_X.read(), JOYSTICK_Y.read()
 # shouldn't get messed up by hardware failure/people moving it
 while DEFAULT_X == 0 or DEFAULT_Y == 0 or DEFAULT_X >= 600 or DEFAULT_Y >= 600:
     DEFAULT_X, DEFAULT_Y = JOYSTICK_X.read(), JOYSTICK_Y.read()
-print(DEFAULT_X, DEFAULT_Y)
-
 OFFSET = 10 # so it works with joysticks that have diff default x/y values
 
+# MY JOYSTICK (WHEN POSITIONED ON THE LEFT)
+    # Minimum value: 0 (far right/down) lower = right/down
+    # Maximum value: 1023 (far left/up) higher = left/up
+    # Middle value: x518 y 514
+
+RIGHT_THRESHOLD = DEFAULT_X - OFFSET
+LEFT_THRESHOLD = DEFAULT_X + OFFSET
+UP_THRESHOLD = DEFAULT_Y + OFFSET
+DOWN_THRESHOLD = DEFAULT_Y - OFFSET
 # =========================================================================
 # CLASSES
 # =========================================================================
@@ -91,24 +98,35 @@ class Player(Character):
         # Game stats
         self.speed = 200
 
+        # Positioning
+        self.facing_up_down = 0  # 1 is down, -1 is up
+        self.facing_left_right = 0  # 1 is right, -1 is left
+
         # Dash
         self.dash_ready = True
         self.is_dashing = False
         self.dash_speed = 400
-        self.facing_up_down = 0     #1 is down, -1 is up
-        self.facing_left_right = 0  #1 is right, -1 is left
+        self.dash_direction = (0,0)
         self.dash_frame_counter = 0
-        self.dash_max_frames = 60
+        self.dash_max_frames = 10
 
         # Block
         self.block_ready = False
 
     def dash(self):
         if self.dash_ready: # Only dash when cooldown is done
-            print(self.facing_left_right, self.facing_up_down)
+            print((JOYSTICK_X.read(), JOYSTICK_Y.read()))
+            self.dash_direction = (self.facing_left_right, self.facing_up_down)
+            if self.dash_direction == (0, 0): #not moving
+                pass #don't dash if not moving
+            else:
+                print(self.dash_direction)
+                self.dash_ready = False # Start dash cooldown
+                self.is_dashing = True  # For update function
 
-            self.dash_ready = False # Start dash cooldown
-            self.is_dashing = True  # For update function
+    def move(self):
+        self.rect.x += self.speed * self.facing_left_right * dt
+        self.rect.y += self.speed * self.facing_up_down * dt
 
     def update(self):
         # Dash
@@ -116,8 +134,10 @@ class Player(Character):
             # Change sprite
             self.image = self.placeholder_dash
             # Move in the correct direction
-            self.rect.x += self.dash_speed * self.facing_left_right * dt
-            self.rect.y += self.dash_speed * self.facing_up_down * dt
+            if self.dash_direction[0] != 0: # move left/right
+                self.rect.x += self.dash_speed * self.dash_direction[0] * dt
+            if self.dash_direction[1] != 0: # move up/down
+                self.rect.y += self.dash_speed * self.dash_direction[1] * dt
             # Update frame count
             self.dash_frame_counter += 1
             # If dashing for a whole lotta frames, stop
@@ -191,27 +211,32 @@ while Running:
     ## --- UPDATING --- ##
     # Player
     if not Player.is_dashing: # dash temporarily disables regular movement
-        if x_move < DEFAULT_X + OFFSET: # move right
-            Player.rect.x += Player.speed * dt
-            Player.facing_left_right = RIGHT
-        else: Player.facing_left_right = 0
-        if x_move > DEFAULT_X - OFFSET: # move left
-            Player.rect.x -= Player.speed * dt
+        # Face right/left (higher x_move = left)
+        if not(x_move > LEFT_THRESHOLD or x_move < RIGHT_THRESHOLD):
+            Player.facing_left_right = 0
+        elif x_move > LEFT_THRESHOLD:
             Player.facing_left_right = LEFT
-        else: Player.facing_left_right = 0
-        if y_move < DEFAULT_Y + OFFSET: # move up
-            Player.rect.y += Player.speed * dt
-            Player.facing_up_down = UP
-        else: Player.facing_up_down = 0
-        if y_move > DEFAULT_Y - OFFSET: # move down
-            Player.rect.y -= Player.speed * dt
+        elif x_move < RIGHT_THRESHOLD:
+            Player.facing_left_right = RIGHT
+        else:
+            Player.facing_left_right = 0
+        # Face up/down (higher x_move = down)
+        if not(y_move < UP_THRESHOLD or y_move > DOWN_THRESHOLD):
+            Player.facing_up_down = 0
+        elif y_move < DOWN_THRESHOLD:
             Player.facing_up_down = DOWN
-        else: Player.facing_left_right = 0
+        elif y_move > UP_THRESHOLD:
+            Player.facing_up_down = UP
+        else:
+            Player.facing_up_down = 0
+        print((Player.facing_left_right, Player.facing_up_down))
 
     if B_DASH.is_toggled():
         Player.dash()
     if B_MELEE.is_toggled():
         Player.dash_ready = True
+
+    Player.move()
 
     ## --- DRAWING --- ##
     window.fill((255, 255, 255))
