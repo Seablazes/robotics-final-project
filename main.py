@@ -81,17 +81,24 @@ class Character(pygame.sprite.Sprite):
 class Player(Character):
     def __init__(self, filename, img_scale, initial_center):
         super().__init__(filename, img_scale, initial_center)
+        # Placeholders for images
+        self.placeholder_base = pygame.image.load(IMAGES_DIR / "stick figure.png").convert_alpha()
+        self.placeholder_base = pygame.transform.scale(self.placeholder_base, (80, 80))
+        self.placeholder_dash = pygame.image.load(IMAGES_DIR / "placeholder dash.png").convert_alpha()
+        self.placeholder_dash = pygame.transform.scale(self.placeholder_dash, (80, 80))
+        self.image = self.placeholder_base
+
         # Game stats
         self.speed = 200
 
         # Dash
         self.dash_ready = True
         self.is_dashing = False
-        self.dash_speed = 600
+        self.dash_speed = 800
         self.facing_up_down = 0     #1 is down, -1 is up
         self.facing_left_right = 0  #1 is right, -1 is left
         self.dash_frame_counter = 0
-        self.dash_max_frames = 60
+        self.dash_max_frames = 90
 
         # Block
         self.block_ready = False
@@ -106,6 +113,8 @@ class Player(Character):
     def update(self):
         # Dash
         if self.is_dashing:
+            # Change sprite
+            self.image = self.placeholder_dash
             # Move in the correct direction
             self.rect.x += self.dash_speed * self.facing_left_right * dt
             self.rect.y += self.dash_speed * self.facing_up_down * dt
@@ -114,6 +123,8 @@ class Player(Character):
             # If dashing for a whole lotta frames, stop
             if self.dash_frame_counter >= 60:
                 self.is_dashing = False
+        else:
+            self.image = self.placeholder_dash
 
         # Edge detection
         if self.rect.top <= 0: self.rect.top = 0
@@ -207,7 +218,6 @@ while Running:
     Characters.update()
     Characters.draw(window)
     pygame.display.update()
-    print("Happy birthday Miss Delgado!")
 
 # =========================================================================
 # CLEANUP
