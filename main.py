@@ -94,11 +94,11 @@ class Player(Character):
         # Dash
         self.dash_ready = True
         self.is_dashing = False
-        self.dash_speed = 800
+        self.dash_speed = 400
         self.facing_up_down = 0     #1 is down, -1 is up
         self.facing_left_right = 0  #1 is right, -1 is left
         self.dash_frame_counter = 0
-        self.dash_max_frames = 90
+        self.dash_max_frames = 60
 
         # Block
         self.block_ready = False
@@ -121,10 +121,11 @@ class Player(Character):
             # Update frame count
             self.dash_frame_counter += 1
             # If dashing for a whole lotta frames, stop
-            if self.dash_frame_counter >= 60:
+            if self.dash_frame_counter >= self.dash_max_frames:
                 self.is_dashing = False
+                self.dash_frame_counter = 0
         else:
-            self.image = self.placeholder_dash
+            self.image = self.placeholder_base
 
         # Edge detection
         if self.rect.top <= 0: self.rect.top = 0
